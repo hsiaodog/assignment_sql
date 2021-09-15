@@ -120,7 +120,12 @@ SELECT DISTINCT ProductSubCategoryID
       , LEFT([Name],35) AS [Name]
       , Color, ListPrice 
 FROM Production.Product
+WHERE ProductSubCategoryID BETWEEN 3 AND 11
+	OR (ListPrice =539.99 AND ProductSubCategoryID=1)
+	OR (ListPrice =1700.99 AND ProductSubCategoryID=2)
+	OR (ListPrice =1364.50 AND ProductSubCategoryID=12)
+	OR (ListPrice =1431.50 AND ProductSubCategoryID=14 AND (Color = 'Red' OR Name LIKE '%Black, 58'))
 ORDER BY ProductSubCategoryID DESC, ListPrice DESC;
-GO
 
+GO
 
