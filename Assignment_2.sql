@@ -292,16 +292,8 @@ GROUP BY Title
 SELECT * FROM Employees
 SELECT * FROM Suppliers
 
-SELECT e.City, e.FirstName+e.LastName AS [Name], s.ContactName, AS [Type (Customer or Supplier)]
-FROM Employees e FULL JOIN Suppliers s
-ON e.City = s.City
--- 28. Have two tables T1 and T2
---F1.T1	F2.T2
---1	2
---2	3
---3	4
-
---Please write a query to inner join these two tables and write down the result of this query.
-
-
--- 29. Based on above two table, Please write a query to left outer join these two tables and write down the result of this query.
+SELECT City, CompanyName AS [Name], ContactName, 'Customer' AS [Type (Customer or Supplier)]
+FROM Customers
+UNION
+SELECT City, CompanyName AS [Name], ContactName, 'Suppliers' AS [Type (Customer or Supplier)]
+FROM Suppliers
