@@ -27,9 +27,9 @@
 --  If DELETE processes whole table, the whole table will be eliminated. But TRUNCATE only clean the all values but does not eliminate table.
 --  Therefore, identity column will be eliminated after DELETE, while identity column will not be eliminated after TRUNCATE.
 
---6.	What is difference between ìdelete from table_nameî and ìtruncate table table_nameî?
---  ìdelete from table_nameî processes whole table and the whole table will be eliminated. But keeping the value in memory.
---  ìtruncate table table_nameî cleans the all values. The 
+--6.	What is difference between ‚Äúdelete from table_name‚Äù and ‚Äútruncate table table_name‚Äù?
+--  ‚Äúdelete from table_name‚Äù processes whole table and the whole table will be eliminated. But keeping the value in memory.
+--  ‚Äútruncate table table_name‚Äù cleans the all values. The 
 
 
 --Write queries for following scenarios
@@ -86,7 +86,7 @@ select City from
 
 
 --7.	List all Customers who have ordered products, 
---      but have the ëship cityí on the order different from their own customer cities.
+--      but have the ‚Äòship city‚Äô on the order different from their own customer cities.
 --8.	List 5 most popular products, their average price, 
 --      and the customer city that ordered most quantity of it.
 select * from Products
@@ -94,11 +94,15 @@ select * from orders
 select * from [Order Details]
 select * from Customers
 
-select p.ProductName, o.UnitPrice [average price], c.City
+select top 5 p.ProductName, d.UnitPrice [average price], c.City, SUM(d.Quantity)
 from Products p left join [Order Details] d
 on p.ProductID = d.ProductID
+left join Orders o
+on d.OrderID = o.OrderID
 left join Customers c
-on d.
+on o.CustomerID = c.CustomerID
+group by p.ProductName, d.UnitPrice, c.City
+ORDER by SUM(d.Quantity) desc
 
 --9.	List all cities that have never ordered something but we have employees there.
 --a.	Use sub-query
