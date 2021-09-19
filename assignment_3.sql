@@ -170,7 +170,28 @@ where c.City is Null
 
 --10.	List one city, if exists, that is the city from where the employee sold most orders (not the product quantity) is, 
 --      and also the city of most total quantity of products ordered from. (tip: join  sub-query)
+select * from Products
+select * from [Order Details]
+select * from orders
+select * from Customers
+select * from Employees
 
+select dt.City 
+from (select e.City,count(o.OrderID) number, rank() over (order by count(o.OrderID) desc) as rnk
+from Employees e join Orders o
+on e.EmployeeID = o.EmployeeID
+group by e.City) dt
+where rnk = 1
+
+
+select dt.City
+from (select e.City, count(d.Quantity) number, rank() over (order by count(d.Quantity) desc) as rnk
+from Employees e join Orders o
+on e.EmployeeID = o.EmployeeID
+join [Order Details] d
+on d.OrderID = o.OrderID
+group by e.City) dt
+where rnk = 1
 
 --11.   How do you remove the duplicates record of a table?
 
