@@ -46,10 +46,16 @@ set statistics IO on
 --a.	Use sub-query
 select distinct c.City from Customers c
 where c.City not in (select distinct e.City from Employees e)
+
 --b.	Do not use sub-query ***
-select distinct City from Customers 
+select City from Customers 
 EXCEPT
-select distinct City from Employees
+select City from Employees
+
+select distinct c.City
+from  Customers c left join Employees e
+on c.City = e.City
+where e.City is Null
 
 --3.	List all products and their total order quantities throughout all orders.
 select * from Products
@@ -77,16 +83,43 @@ Group by c.City
 select * from Customers
 
 --a.	Use union
-select City from Customers
-select City from 
+select c.City, count(1)
+from Customers c
+group by c.City
+having count(1) >=2
 
 --b.	Use sub-query and no union
+select * from (select c.City,Count(c.CustomerID) total from Customers c
+group by c.city) dt
+where total >= 2
 
 --6.	List all Customer Cities that have ordered at least two different kinds of products.
+select * from [Order Details]
+select * from Orders
+
+select c.City, count(d.ProductID)
+from Customers c join Orders o
+on c.CustomerID = o.CustomerID
+join [Order Details] d
+on o.OrderID = d.OrderID
+group by c.City
+having count(d.ProductID) >=2
 
 
 --7.	List all Customers who have ordered products, 
 --      but have the ‘ship city’ on the order different from their own customer cities.
+select * from Products
+select * from orders
+select * from [Order Details]
+select * from Customers
+
+select * from (select c.ContactName, c.City, o.ShipCity
+from Customers c join Orders o
+on c.CustomerID = o.CustomerID) dt
+where dt.City != dt.ShipCity
+
+
+
 --8.	List 5 most popular products, their average price, 
 --      and the customer city that ordered most quantity of it.
 select * from Products
@@ -94,27 +127,100 @@ select * from orders
 select * from [Order Details]
 select * from Customers
 
-select top 5 p.ProductName, d.UnitPrice [average price], c.City, SUM(d.Quantity)
-from Products p left join [Order Details] d
+select top 5 p.ProductName, d.UnitPrice [average price], c.City,SUM(d.Quantity)
+from Products p inner join [Order Details] d
 on p.ProductID = d.ProductID
-left join Orders o
+inner join Orders o
 on d.OrderID = o.OrderID
-left join Customers c
+inner join Customers c
 on o.CustomerID = c.CustomerID
 group by p.ProductName, d.UnitPrice, c.City
 ORDER by SUM(d.Quantity) desc
 
 --9.	List all cities that have never ordered something but we have employees there.
+select * from Products
+select * from [Order Details]
+select * from orders
+select * from Customers
+select * from Employees
+
 --a.	Use sub-query
+select distinct e.City 
+From Employees e
+where e.City not in 
+(select distinct c.City
+from Customers c
+where c.CustomerID in (select o.CustomerID from Orders o))
+
+
 --b.	Do not use sub-query
+select distinct e.City 
+From Employees e
+except
+select distinct c.City
+from Customers c join Orders o
+on o.CustomerID = c.CustomerID
+
+select distinct e.City 
+from Customers c join Orders o
+on c.CustomerID = o.CustomerID
+right join Employees e
+on c.City = e.City
+where c.City is Null
+
 --10.	List one city, if exists, that is the city from where the employee sold most orders (not the product quantity) is, 
 --      and also the city of most total quantity of products ordered from. (tip: join  sub-query)
+
+
 --11.   How do you remove the duplicates record of a table?
---12.   Sample table to be used for solutions below- 
+
+--12.   Sample table to be used for solutions below-  ***
 --      Employee ( empid integer, mgrid integer, deptid integer, salary integer) Dept (deptid integer, deptname text)
 --      Find employees who do not manage anybody.
+
+drop table Dept
+drop table Employee
+
+
+create table Dept(
+	deptid int primary key identity(100,1),
+	deptname varchar(32) unique
+)
+
+create table Employee(
+	empid int primary key identity(1,1),
+	mgrid int,
+	deptid int REFERENCES Dept(deptid) ON DELETE CASCADE,
+	salary decimal(6,2)
+)
+
+insert into Dept(deptname) values('dep_a'),('dep_b'),('dep_c'),('dep_d'),('dep_e'),('dep_f'),('dep_g'),('dep_h'),('dep_i'),('dep_j'),('dep_k');
+insert into Employee values (1,100,6000.00),(1,100,5000.00),(1,100,4000.00),(1,100,3000.00),(1,100,2000.00),
+(1,101,8000.00),(1,101,7000.00),(1,101,6000.00),(1,101,5000.00),(1,101,4000.00),
+(1,102,3000.00),(1,102,2000.00),(1,103,4000.00),(1,103,3000.00),(1,104,2000.00),
+(1,105,9000.00),(1,105,8000.00),(1,105,4000.00),(1,106,8000.00),(1,106,2000.00);
+select * from Employee
+select * from Dept
+truncate table Employee
+
+
 --13.   Find departments that have maximum number of employees. 
 --      (solution should consider scenario having more than 1 departments that have maximum number of employees). 
 --      Result should only have - deptname, count of employees sorted by deptname.
+select dt.deptname, dt.[count of employees]
+from (select d.deptname, count(e.empid) [count of employees],rank() over(order by count(e.empid) desc) rnk
+from Dept d join Employee e
+on d.deptid = e.deptid
+group by d.deptname) dt
+where rnk = 1
+order by dt.deptname
+
 --14.   Find top 3 employees (salary based) in every department. 
 --      Result should have deptname, empid, salary sorted by deptname and then employee with high to low salary.
+
+select dt.deptname,dt.empid,dt.salary
+from (select d.deptname, e.empid, e.salary, rank() over (partition by d.deptname order by e.salary desc) as rnk
+from Dept d join Employee e
+on d.deptid = e.deptid) dt
+where dt.rnk between 1 and 3
+
