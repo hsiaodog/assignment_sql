@@ -194,6 +194,21 @@ group by e.City) dt
 where rnk = 1
 
 --11.   How do you remove the duplicates record of a table?
+create table original_table (key_value int )
+
+insert into original_table values (1)
+insert into original_table values (1)
+insert into original_table values (1)
+
+insert into original_table values (2)
+insert into original_table values (2)
+insert into original_table values (2)
+insert into original_table values (2)
+select * from original_table
+delete dt from (select *, ROW_NUMBER() over(partition by t.key_value order by (select NULL)) as rnk
+from original_table t) dt
+where dt.rnk >1
+select * from original_table
 
 --12.   Sample table to be used for solutions below-  ***
 --      Employee ( empid integer, mgrid integer, deptid integer, salary integer) Dept (deptid integer, deptname text)
@@ -224,6 +239,9 @@ select * from Employee
 select * from Dept
 truncate table Employee
 
+select e.empid
+from Employee e
+where e.empid not in (select m.mgrid from Employee m)
 
 --13.   Find departments that have maximum number of employees. 
 --      (solution should consider scenario having more than 1 departments that have maximum number of employees). 
